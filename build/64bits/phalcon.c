@@ -51626,11 +51626,12 @@ static PHP_METHOD(Phalcon_Mvc_Url, get){
 			action_name  = phalcon_fetch_nproperty_this(router, SL("_defaultAction"), PH_NOISY_CC);
 			phalcon_array_update_quick_string(&uri, SS("action"), 229459129920867UL, &action_name, PH_COPY | PH_SEPARATE);
 		}
-
+#if 0
 		if (!phalcon_array_isset_string_fetch(&params, uri, SS("params"))) {
 			params  = phalcon_fetch_nproperty_this(router, SL("_defaultParams"), PH_NOISY_CC);
 			phalcon_array_update_quick_string(&uri, SS("params"), 229478421008265UL, &params, PH_COPY | PH_SEPARATE);
 		}
+#endif
 	
 		PHALCON_OBS_VAR(route_name);
 		phalcon_array_fetch_quick_string(&route_name, uri, SS("for"), 6385231116UL, PH_NOISY);
