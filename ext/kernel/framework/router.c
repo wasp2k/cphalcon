@@ -263,6 +263,7 @@ void phalcon_replace_paths(zval *return_value, zval *pattern, zval *paths, zval 
 							}
 						}
 						looking_placeholder = 0;
+						i--;
 						continue;
 					}
 				}
