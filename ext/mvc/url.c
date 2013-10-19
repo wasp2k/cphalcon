@@ -275,6 +275,8 @@ PHP_METHOD(Phalcon_Mvc_Url, get){
 	zval *namespace_name, *module_name;
 	zval *controller_name, *action_name, *params;
 
+	zval *defaults;
+
 	PHALCON_MM_GROW();
 
 	phalcon_fetch_params(1, 0, 2, &uri, &args);
@@ -282,32 +284,6 @@ PHP_METHOD(Phalcon_Mvc_Url, get){
 	if (!uri) {
 		uri = PHALCON_GLOBAL(z_null);
 	}
-	
-	if (!phalcon_array_isset_string_fetch(&namespace_name, uri, SS("namespace"))) {
-		namespace_name  = phalcon_fetch_nproperty_this(router, SL("_defaultNamespace"), PH_NOISY_CC);
-		phalcon_array_update_quick_string(&uri, SS("namespace"), 2168370242281006450UL, &namespace_name, PH_COPY | PH_SEPARATE);
-	}
-
-	if (!phalcon_array_isset_string_fetch(&module_name, uri, SS("module"))) {
-		module_name  = phalcon_fetch_nproperty_this(router, SL("_defaultModule"), PH_NOISY_CC);
-		phalcon_array_update_quick_string(&uri, SS("module"), 229475078614155UL, &module_name, PH_COPY | PH_SEPARATE);
-	}
-
-	if (!phalcon_array_isset_string_fetch(&controller_name, uri, SS("controller"))) {
-		controller_name  = phalcon_fetch_nproperty_this(router, SL("_defaultController"), PH_NOISY_CC);
-		phalcon_array_update_quick_string(&uri, SS("controller"), 13869595913130920233UL, &controller_name, PH_COPY | PH_SEPARATE);
-	}
-
-	if (!phalcon_array_isset_string_fetch(&action_name, uri, SS("action"))) {
-		action_name  = phalcon_fetch_nproperty_this(router, SL("_defaultAction"), PH_NOISY_CC);
-		phalcon_array_update_quick_string(&uri, SS("action"), 229459129920867UL, &action_name, PH_COPY | PH_SEPARATE);
-	}
-#if 0
-	if (!phalcon_array_isset_string_fetch(&params, uri, SS("params"))) {
-		params  = phalcon_fetch_nproperty_this(router, SL("_defaultParams"), PH_NOISY_CC);
-		phalcon_array_update_quick_string(&uri, SS("params"), 229478421008265UL, &params, PH_COPY | PH_SEPARATE);
-	}
-#endif
 
 	PHALCON_INIT_VAR(base_uri);
 	phalcon_call_method(base_uri, this_ptr, "getbaseuri");
@@ -340,6 +316,38 @@ PHP_METHOD(Phalcon_Mvc_Url, get){
 			PHALCON_VERIFY_INTERFACE(router, phalcon_mvc_routerinterface_ce);
 			phalcon_update_property_this(this_ptr, SL("_router"), router TSRMLS_CC);
 		}
+
+		PHALCON_INIT_VAR(defaults);
+		array_init(defaults);
+
+		if (!phalcon_array_isset_string_fetch(&namespace_name, uri, SS("namespace"))) {
+			namespace_name  = phalcon_fetch_nproperty_this(router, SL("_defaultNamespace"), PH_NOISY_CC);
+			if (Z_TYPE_P(namespace_name) == IS_STRING) {
+				phalcon_array_update_quick_string(&defaults, SS("namespace"), 2168370242281006450UL, &namespace_name, PH_COPY | PH_SEPARATE);
+			}
+		}
+
+		if (!phalcon_array_isset_string_fetch(&module_name, uri, SS("module"))) {
+			module_name  = phalcon_fetch_nproperty_this(router, SL("_defaultModule"), PH_NOISY_CC);
+			if (Z_TYPE_P(module_name) == IS_STRING) {
+				phalcon_array_update_quick_string(&defaults, SS("module"), 229475078614155UL, &module_name, PH_COPY | PH_SEPARATE);
+			}
+
+		}
+
+		if (!phalcon_array_isset_string_fetch(&controller_name, uri, SS("controller"))) {
+			controller_name  = phalcon_fetch_nproperty_this(router, SL("_defaultController"), PH_NOISY_CC);
+			if (Z_TYPE_P(controller_name) == IS_STRING) {
+				phalcon_array_update_quick_string(&defaults, SS("controller"), 13869595913130920233UL, &controller_name, PH_COPY | PH_SEPARATE);
+			}
+		}
+
+		if (!phalcon_array_isset_string_fetch(&action_name, uri, SS("action"))) {
+			action_name  = phalcon_fetch_nproperty_this(router, SL("_defaultAction"), PH_NOISY_CC);
+			if (Z_TYPE_P(action_name) == IS_STRING) {
+				phalcon_array_update_quick_string(&defaults, SS("action"), 229459129920867UL, &action_name, PH_COPY | PH_SEPARATE);
+			}
+		}
 	
 		PHALCON_OBS_VAR(route_name);
 		phalcon_array_fetch_string(&route_name, uri, SL("for"), PH_NOISY);
@@ -369,7 +377,7 @@ PHP_METHOD(Phalcon_Mvc_Url, get){
 		 * Replace the patterns by its variables
 		 */
 		PHALCON_INIT_VAR(processed_uri);
-		phalcon_replace_paths(processed_uri, pattern, paths, uri TSRMLS_CC);
+		phalcon_replace_paths(processed_uri, pattern, paths, uri, defaults TSRMLS_CC);
 		PHALCON_CONCAT_VV(return_value, base_uri, processed_uri);
 	}
 	else {

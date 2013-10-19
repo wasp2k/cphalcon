@@ -19,4 +19,4 @@
 
 /** Extract named parameters */
 extern void phalcon_extract_named_params(zval *return_value, zval *str, zval *matches);
-extern void phalcon_replace_paths(zval *return_value, zval *pattern, zval *paths, zval *uri TSRMLS_DC);
+extern void phalcon_replace_paths(zval *return_value, zval *pattern, zval *paths, zval *uri, zval *defaults TSRMLS_DC);
