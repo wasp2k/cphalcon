@@ -323,7 +323,7 @@ PHP_METHOD(Phalcon_Mvc_Url, get){
 		if (!phalcon_array_isset_string_fetch(&namespace_name, uri, SS("namespace"))) {
 			namespace_name  = phalcon_fetch_nproperty_this(router, SL("_defaultNamespace"), PH_NOISY_CC);
 			if (Z_TYPE_P(namespace_name) == IS_STRING) {
-				phalcon_array_update_quick_string(&defaults, SS("namespace"), 2168370242281006450UL, &namespace_name, PH_COPY | PH_SEPARATE);
+				phalcon_array_update_quick_string(&defaults, SS("namespace"), 8246672985113724018UL, &namespace_name, PH_COPY | PH_SEPARATE);
 			}
 		}
 
