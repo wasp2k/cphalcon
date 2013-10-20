@@ -112,7 +112,6 @@ static void phalcon_append_params_to_url(zval *params, smart_str *route_str)
 	zend_hash_internal_pointer_reset_ex(ht, &pos);
 	while(pos) {
 		use_copy = 0;
-
 		zend_hash_get_current_data_ex(ht, (void **)&v, &pos);
 		if (v) {
 			if (Z_TYPE_PP(v) != IS_STRING) {
@@ -121,15 +120,14 @@ static void phalcon_append_params_to_url(zval *params, smart_str *route_str)
 					v = &v_copy_ptr;
 				}
 			}
-
 			smart_str_appendl(route_str, Z_STRVAL_PP(v), Z_STRLEN_PP(v));
-			smart_str_appendc(route_str, '/');
 			if (use_copy) {
 				zval_dtor(&v_copy);
 			}
 		}
-
 		zend_hash_move_forward_ex(ht, &pos);
+		if (v && pos)
+			smart_str_appendc(route_str, '/');
 	}
 }
 
