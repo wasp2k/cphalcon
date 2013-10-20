@@ -101,6 +101,38 @@ zval *phalcon_replace_marker(int named, zval *paths, zval *replacements, unsigne
 	return NULL;
 }
 
+static void phalcon_append_params_to_url(zval *params, smart_str *route_str)
+{
+	HashPosition pos = NULL;
+	HashTable *ht  = Z_ARRVAL_P(params);
+	zval **v, v_copy;
+	zval *v_copy_ptr = &v_copy;
+	int use_copy;
+
+	zend_hash_internal_pointer_reset_ex(ht, &pos);
+	while(pos) {
+		use_copy = 0;
+
+		zend_hash_get_current_data_ex(ht, (void **)&v, &pos);
+		if (v) {
+			if (Z_TYPE_PP(v) != IS_STRING) {
+				zend_make_printable_zval(*v, &v_copy, &use_copy);
+				if (use_copy) {
+					v = &v_copy_ptr;
+				}
+			}
+
+			smart_str_appendl(route_str, Z_STRVAL_PP(v), Z_STRLEN_PP(v));
+			smart_str_appendc(route_str, '/');
+			if (use_copy) {
+				zval_dtor(&v_copy);
+			}
+		}
+
+		zend_hash_move_forward_ex(ht, &pos);
+	}
+}
+
 /**
  * Replaces placeholders and named variables with their corresponding values in an array
  */
@@ -168,15 +200,19 @@ void phalcon_replace_paths(zval *return_value, zval *pattern, zval *paths, zval 
 							}
 							if (replace) {
 								use_copy = 0;
-								if (Z_TYPE_P(replace) != IS_STRING) {
-									zend_make_printable_zval(replace, &replace_copy, &use_copy);
-									if (use_copy) {
-										replace = &replace_copy;
+								if (Z_TYPE_P(replace) == IS_ARRAY) {
+									phalcon_append_params_to_url(replace, &route_str);
+								} else {
+									if (Z_TYPE_P(replace) != IS_STRING) {
+										zend_make_printable_zval(replace, &replace_copy, &use_copy);
+										if (use_copy) {
+											replace = &replace_copy;
+										}
 									}
-								}
-								smart_str_appendl(&route_str, Z_STRVAL_P(replace), Z_STRLEN_P(replace));
-								if (use_copy) {
-									zval_dtor(&replace_copy);
+									smart_str_appendl(&route_str, Z_STRVAL_P(replace), Z_STRLEN_P(replace));
+									if (use_copy) {
+										zval_dtor(&replace_copy);
+									}
 								}
 								if (!defaults_used) {
 									cut_url_at = route_str.len;
@@ -206,21 +242,25 @@ void phalcon_replace_paths(zval *return_value, zval *pattern, zval *paths, zval 
 							if (!replace && (defaults != NULL)) {
 								position--;
 								replace = phalcon_replace_marker(1, paths, defaults, &position, cursor, marker);
-								defaultsUsed = 1;
+								defaults_used = 1;
 							} else {
-								defaultsUsed = 0;
+								defaults_used = 0;
 							}
 							if (replace) {
 								use_copy = 0;
-								if (Z_TYPE_P(replace) != IS_STRING) {
-									zend_make_printable_zval(replace, &replace_copy, &use_copy);
-									if (use_copy) {
-										replace = &replace_copy;
+								if (Z_TYPE_P(replace) == IS_ARRAY) {
+									phalcon_append_params_to_url(replace, &route_str);
+								} else {
+									if (Z_TYPE_P(replace) != IS_STRING) {
+										zend_make_printable_zval(replace, &replace_copy, &use_copy);
+										if (use_copy) {
+											replace = &replace_copy;
+										}
 									}
-								}
-								smart_str_appendl(&route_str, Z_STRVAL_P(replace), Z_STRLEN_P(replace));
-								if (use_copy) {
-									zval_dtor(&replace_copy);
+									smart_str_appendl(&route_str, Z_STRVAL_P(replace), Z_STRLEN_P(replace));
+									if (use_copy) {
+										zval_dtor(&replace_copy);
+									}
 								}
 								if (!defaults_used) {
 									cut_url_at = route_str.len;
@@ -248,22 +288,27 @@ void phalcon_replace_paths(zval *return_value, zval *pattern, zval *paths, zval 
 						}
 						if (replace) {
 							use_copy = 0;
-							if (Z_TYPE_P(replace) != IS_STRING) {
-								zend_make_printable_zval(replace, &replace_copy, &use_copy);
-								if (use_copy) {
-									replace = &replace_copy;
+							if (Z_TYPE_P(replace) == IS_ARRAY) {
+								phalcon_append_params_to_url(replace, &route_str);
+							} else {
+								if (Z_TYPE_P(replace) != IS_STRING) {
+									zend_make_printable_zval(replace, &replace_copy, &use_copy);
+									if (use_copy) {
+										replace = &replace_copy;
+									}
 								}
-							}
-							smart_str_appendl(&route_str, Z_STRVAL_P(replace), Z_STRLEN_P(replace));
-							if (use_copy) {
-								zval_dtor(&replace_copy);
+								smart_str_appendl(&route_str, Z_STRVAL_P(replace), Z_STRLEN_P(replace));
+								if (use_copy) {
+									zval_dtor(&replace_copy);
+								}
 							}
 							if (!defaults_used) {
 								cut_url_at = route_str.len;
 							}
 						}
 						looking_placeholder = 0;
-						i--;
+						if (i < (Z_STRLEN_P(pattern) - 1))
+							i--;
 						continue;
 					}
 				}
